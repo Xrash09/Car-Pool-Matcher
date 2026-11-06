@@ -46,14 +46,18 @@ def load_cabs(filename):
         return []
 
     cabs = []
-    for cab_data in cab_list:
-        new_cab = Cab(
-            cab_data["driver_name"],
-            cab_data["number_of_seats"],
-            cab_data["destination"],
-            cab_data["time_slot"],
-        )
-        cabs.append(new_cab)
+    try:
+        for cab_data in cab_list:
+            new_cab = Cab(
+                cab_data["driver_name"],
+                cab_data["number_of_seats"],
+                cab_data["destination"],
+                cab_data["time_slot"],
+            )
+            cabs.append(new_cab)
+    except KeyError as missing:
+        print("A cab in", filename, "is missing the field", missing, "- starting with no cabs.")
+        return []
     return cabs
 
 
@@ -69,10 +73,9 @@ def dispatch_cab(cabs, waiting):
     chosen_cab = None
     for cab in cabs:
 
-        if cab.has_left == False and cab.destination == destination and cab.time_slot == time_slot:
+        if not cab.has_left and cab.destination == destination and cab.time_slot == time_slot:
             chosen_cab = cab
             break
-        pass
 
     if chosen_cab is None:
         print("No open cab for", destination + ",", time_slot, "- students keep waiting.")
@@ -107,7 +110,7 @@ def find_matches(cabs, waiting):
         free_seats = cab.number_of_seats - len(cab.students)
         would_get_in = []
         while free_seats > 0 and len(copies[trip]) > 0:
-            entry = heapq.heappop(copies[trip])            # TODO: pop from the COPY, not waiting[trip]
+            entry = heapq.heappop(copies[trip])            
             would_get_in.append(entry[2])
             free_seats = free_seats - 1
 
@@ -119,7 +122,7 @@ def find_matches(cabs, waiting):
             print("  -", student.name, "(Year", str(student.year) + ")")
 
     if not anything_shown:
-        print("No open cabs.")
+        print("No open cabs")
 
 waiting = {}
 cabs = load_cabs("cabs.json")
@@ -153,10 +156,11 @@ while True:
         print("Added", name, "to the waiting list for", destination + ",", time_slot)
 
     elif choice == "2":
+        
         anyone_waiting = False
         print("Waiting Requests:")
         for trip in waiting:
-            for entry in waiting[trip]:
+            for entry in sorted(waiting[trip]):
                 request = entry[2]          
                 print("-", request.name, "|", request.destination + ", " + request.time_slot, "| Year", request.year)
                 anyone_waiting = True
@@ -179,7 +183,7 @@ while True:
     elif choice == "3":
         find_matches(cabs, waiting)
 
-    elif choice=="4":
+    elif choice == "4":
         dispatch_cab(cabs, waiting)
 
     elif choice == "5":
@@ -187,4 +191,4 @@ while True:
         break
 
     else:
-        print("Please enter 1, 2 or 3")
+        print("Please enter a number 1-5")
