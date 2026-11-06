@@ -1,3 +1,4 @@
+import json
 from models import Cab, RideRequest
 
 DESTINATIONS = ["Delhi", "Jaipur"]
@@ -32,8 +33,31 @@ def ask_name():
             return name
         print("Name can't be empty.")
 
+def load_cabs(filename):
+    try:
+        with open(filename) as f:
+            cab_list = json.load(f)        # list of dictionaries
+    except FileNotFoundError:
+        print("Could not find", filename, "- starting with no cabs.")
+        return []
+    except json.JSONDecodeError:
+        print(filename, "is not valid JSON - starting with no cabs.")
+        return []
+
+    cabs = []
+    for cab_data in cab_list:
+        new_cab = Cab(
+            cab_data["driver_name"],
+            cab_data["number_of_seats"],
+            cab_data["destination"],
+            cab_data["time_slot"],
+        )
+        cabs.append(new_cab)
+    return cabs
+
 
 waiting_requests = []
+cabs = load_cabs("cabs.json")
 request_counter = 0
 
 while True:
@@ -57,6 +81,7 @@ while True:
         print("Added", name, "to the waiting list for", destination + ",", time_slot)
 
     elif choice == "2":
+        # Part 1: waiting students (you already have this)
         if len(waiting_requests) == 0:
             print("No requests yet")
         else:
@@ -64,6 +89,23 @@ while True:
             for request in waiting_requests:
                 print("-", request.name, "|", request.destination + ", " + request.time_slot, "| Year", request.year)
 
+        print()
+
+        # Part 2: all cabs (new)
+        if len(cabs) == 0:
+            print("No cabs loaded")
+        else:
+            print("Cabs:")
+            for cab in cabs:
+                seats_taken = len(cab.students)
+
+                if cab.has_left:
+                    status = "Left"
+                else:
+                    status = "Open"
+
+                print("-", cab.driver_name, "|", cab.destination + ", " + cab.time_slot, "|", str(seats_taken) + "/" + str(cab.number_of_seats), "|", status)    
+    
     elif choice == "3":
         print("Bye!")
         break
