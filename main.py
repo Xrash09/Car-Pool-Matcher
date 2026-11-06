@@ -1,4 +1,5 @@
 import json
+import heapq
 from models import Cab, RideRequest
 
 DESTINATIONS = ["Delhi", "Jaipur"]
@@ -36,7 +37,7 @@ def ask_name():
 def load_cabs(filename):
     try:
         with open(filename) as f:
-            cab_list = json.load(f)        # list of dictionaries
+            cab_list = json.load(f)       
     except FileNotFoundError:
         print("Could not find", filename, "- starting with no cabs.")
         return []
@@ -56,7 +57,7 @@ def load_cabs(filename):
     return cabs
 
 
-waiting_requests = []
+waiting = {}
 cabs = load_cabs("cabs.json")
 request_counter = 0
 
@@ -76,35 +77,27 @@ while True:
 
         request_counter = request_counter + 1
         new_request = RideRequest(name, destination, time_slot, year, request_counter)
-        waiting_requests.append(new_request)
+
+        trip = (destination, time_slot)
+        if trip not in waiting:
+            waiting[trip] = []       
+        entry = (5 - year, request_counter, new_request)
+        heapq.heappush(waiting[trip], entry)
 
         print("Added", name, "to the waiting list for", destination + ",", time_slot)
 
     elif choice == "2":
-        # Part 1: waiting students (you already have this)
-        if len(waiting_requests) == 0:
-            print("No requests yet")
-        else:
-            print("Waiting Requests:")
-            for request in waiting_requests:
+        anyone_waiting = False
+        print("Waiting Requests:")
+        for trip in waiting:
+            for entry in waiting[trip]:
+                request = entry[2]          
                 print("-", request.name, "|", request.destination + ", " + request.time_slot, "| Year", request.year)
+                anyone_waiting = True
+        if not anyone_waiting:
+            print("No requests yet")
 
-        print()
-
-        # Part 2: all cabs (new)
-        if len(cabs) == 0:
-            print("No cabs loaded")
-        else:
-            print("Cabs:")
-            for cab in cabs:
-                seats_taken = len(cab.students)
-
-                if cab.has_left:
-                    status = "Left"
-                else:
-                    status = "Open"
-
-                print("-", cab.driver_name, "|", cab.destination + ", " + cab.time_slot, "|", str(seats_taken) + "/" + str(cab.number_of_seats), "|", status)    
+        print()  
     
     elif choice == "3":
         print("Bye!")

@@ -1,0 +1,6 @@
+[
+    {"driver_name": "Ram",    "number_of_seats": 4, "destination": "Delhi",  "time_slot": "Morning"},
+    {"driver_name": "Shyam",  "number_of_seats": 3, "destination": "Delhi",  "time_slot": "Morning"},
+    {"driver_name": "Mohan",  "number_of_seats": 2, "destination": "Jaipur", "time_slot": "Afternoon"},
+    {"driver_name": "Suresh", "number_of_seats": 4, "destination": "Jaipur", "time_slot": "Night"}
+]
