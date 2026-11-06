@@ -97,7 +97,18 @@ while True:
         if not anyone_waiting:
             print("No requests yet")
 
-        print()  
+        print()
+        if len(cabs) == 0:
+            print("No cabs loaded")
+        else:
+            print("Cabs:")
+            for cab in cabs:
+                seats_taken = len(cab.students)
+                if cab.has_left:
+                    status = "Left"
+                else:
+                    status = "Open"
+                print("-", cab.driver_name, "|", cab.destination + ", " + cab.time_slot, "|", str(seats_taken) + "/" + str(cab.number_of_seats), "|", status)  
     
     elif choice == "3":
         print("Bye!")
