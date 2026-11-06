@@ -89,6 +89,37 @@ def dispatch_cab(cabs, waiting):
     for student in chosen_cab.students:
         print("-", student.name, "(Year", str(student.year) + ")")
 
+def find_matches(cabs, waiting):
+    copies = {}
+    anything_shown = False
+
+    for cab in cabs:
+        if cab.has_left:
+            continue                          
+
+        trip = (cab.destination, cab.time_slot)
+        if trip not in copies:
+            if trip in waiting:
+                copies[trip] = list(waiting[trip])   
+            else:
+                copies[trip] = []
+
+        free_seats = cab.number_of_seats - len(cab.students)
+        would_get_in = []
+        while free_seats > 0 and len(copies[trip]) > 0:
+            entry = heapq.heappop(copies[trip])            # TODO: pop from the COPY, not waiting[trip]
+            would_get_in.append(entry[2])
+            free_seats = free_seats - 1
+
+        anything_shown = True
+        print(cab.driver_name, "|", cab.destination + ", " + cab.time_slot, "would take:")
+        if len(would_get_in) == 0:
+            print("  (nobody waiting)")
+        for student in would_get_in:
+            print("  -", student.name, "(Year", str(student.year) + ")")
+
+    if not anything_shown:
+        print("No open cabs.")
 
 waiting = {}
 cabs = load_cabs("cabs.json")
@@ -146,7 +177,7 @@ while True:
                 print("-", cab.driver_name, "|", cab.destination + ", " + cab.time_slot, "|", str(seats_taken) + "/" + str(cab.number_of_seats), "|", status)  
     
     elif choice == "3":
-        print("Coming soon")
+        find_matches(cabs, waiting)
 
     elif choice=="4":
         dispatch_cab(cabs, waiting)
