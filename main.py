@@ -57,6 +57,39 @@ def load_cabs(filename):
     return cabs
 
 
+def dispatch_cab(cabs, waiting):
+    destination = ask_choice("Destination (Delhi/Jaipur): ", DESTINATIONS)
+    time_slot = ask_choice("Time slot (Morning/Afternoon/Evening/Night): ", TIME_SLOTS)
+    trip = (destination, time_slot)
+
+    if trip not in waiting or len(waiting[trip]) == 0:
+        print("Nobody is waiting for", destination + ",", time_slot)
+        return
+
+    chosen_cab = None
+    for cab in cabs:
+
+        if cab.has_left == False and cab.destination == destination and cab.time_slot == time_slot:
+            chosen_cab = cab
+            break
+        pass
+
+    if chosen_cab is None:
+        print("No open cab for", destination + ",", time_slot, "- students keep waiting.")
+        return
+
+    free_seats = chosen_cab.number_of_seats - len(chosen_cab.students)
+    while free_seats > 0 and len(waiting[trip]) > 0:
+        entry = heapq.heappop(waiting[trip])
+        chosen_cab.students.append(entry[2])
+        free_seats = free_seats - 1
+
+    chosen_cab.has_left = True
+    print(chosen_cab.driver_name + "'s cab has left for", destination + ",", time_slot, "with:")
+    for student in chosen_cab.students:
+        print("-", student.name, "(Year", str(student.year) + ")")
+
+
 waiting = {}
 cabs = load_cabs("cabs.json")
 request_counter = 0
@@ -65,7 +98,9 @@ while True:
     print()
     print("1. Add a ride request")
     print("2. View waiting students and all cabs")
-    print("3. Quit")
+    print("3. Find matches")
+    print("4. Dispatch a cab")
+    print("5. Quit")
 
     choice = input("Enter your choice: ").strip()
 
@@ -111,6 +146,12 @@ while True:
                 print("-", cab.driver_name, "|", cab.destination + ", " + cab.time_slot, "|", str(seats_taken) + "/" + str(cab.number_of_seats), "|", status)  
     
     elif choice == "3":
+        print("Coming soon")
+
+    elif choice=="4":
+        dispatch_cab(cabs, waiting)
+
+    elif choice == "5":
         print("Bye!")
         break
 
